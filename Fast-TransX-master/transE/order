@@ -1,0 +1,7 @@
+g++ transE.cpp -o transE -pthread -O3 -march=native
+
+./transE -size 100 -sizeR 100 -input ../data/WN18/ -output ../output/TransE/  -thread 2 -epochs 1000 -nbatches 100 -alpha 0.001 -margin 4
+
+g++ test_transE.cpp -o test_transE -pthread -O3 -march=native
+
+./test_transE -size 100 -sizeR 100 -input ../data/WN18/ -init ../output/TransE/ -thread 2

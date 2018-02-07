@@ -1,0 +1,3 @@
+g++ transR.cpp -o transR -pthread -o3 -march=native
+
+./transR -size 100 -sizeR 100 -input ../data/WN18/ -output ../output/TransR/ -thread 6 -epoches -nbatches 100 -alpha 0.001 -margin 4
