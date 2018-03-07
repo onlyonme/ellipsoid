@@ -16,7 +16,7 @@ long entityTotal;
 long Threads = 8;
 long dimensionR = 50;
 long dimension = 50;
-
+int hit=10;g
 float *entityVec, *relationVec, *entityRelVec, *matrix;
 long testTotal, tripleTotal, trainTotal, validTotal;
 
@@ -50,7 +50,7 @@ void init() {
     tmp = fscanf(fin, "%ld", &relationTotal);
     fclose(fin);
     relationVec = (float *)calloc(relationTotal * dimensionR, sizeof(float));
-    
+
     fin = fopen((inPath + "entity2id.txt").c_str(), "r");
     tmp = fscanf(fin, "%ld", &entityTotal);
     fclose(fin);
@@ -100,7 +100,7 @@ void init() {
         tripleList[i + testTotal + trainTotal].t = t;
         tripleList[i + testTotal + trainTotal].r = r;
     }
-    
+
     fclose(f_kb1);
     fclose(f_kb2);
     fclose(f_kb3);
@@ -174,7 +174,7 @@ void prepare() {
                 for (long ii = 0; ii < dimensionR; ii++)
                     tmp = fscanf(fin, "%f", &matrix[i * dimensionR * dimension + jj + ii * dimension]);
     fclose(fin);
-    
+
     entityRelVec = (float *)calloc(entityTotal * relationTotal * dimensionR,sizeof(float));
     pthread_t *pt = (pthread_t *)malloc(Threads * sizeof(pthread_t));
     for (long a = 0; a < Threads; a++)
@@ -266,20 +266,20 @@ void* testMode(void *con) {
                 }
             }
         }
-        if (l_filter_s < 10) l_filter_tot[0][id] += 1;
-        if (l_s < 10) l_tot[0][id] += 1;
-        if (r_filter_s < 10) r_filter_tot[0][id] += 1;
-        if (r_s < 10) r_tot[0][id] += 1;
+        if (l_filter_s < hit) l_filter_tot[0][id] += 1;
+        if (l_s < hit) l_tot[0][id] += 1;
+        if (r_filter_s < hit) r_filter_tot[0][id] += 1;
+        if (r_s < hit) r_tot[0][id] += 1;
 
         l_filter_rank[0][id] += l_filter_s;
         r_filter_rank[0][id] += r_filter_s;
         l_rank[0][id] += l_s;
         r_rank[0][id] += r_s;
 
-        if (l_filter_s < 10) l_filter_tot[label][id] += 1;
-        if (l_s < 10) l_tot[label][id] += 1;
-        if (r_filter_s < 10) r_filter_tot[label][id] += 1;
-        if (r_s < 10) r_tot[label][id] += 1;
+        if (l_filter_s < hit) l_filter_tot[label][id] += 1;
+        if (l_s < hit) l_tot[label][id] += 1;
+        if (r_filter_s < hit) r_filter_tot[label][id] += 1;
+        if (r_s < hit) r_tot[label][id] += 1;
 
         l_filter_rank[label][id] += l_filter_s;
         r_filter_rank[label][id] += r_filter_s;
@@ -374,7 +374,8 @@ void setparameters(int argc, char **argv) {
     if ((i = ArgPos((char *)"-init", argc, argv)) > 0) initPath = argv[i + 1];
     if ((i = ArgPos((char *)"-thread", argc, argv)) > 0) Threads = atoi(argv[i + 1]);
     if ((i = ArgPos((char *)"-note", argc, argv)) > 0) note = argv[i + 1];
-} 
+    if ((i = ArgPos((char *)"-hit", argc, argv)) > 0) hit = atoi(argv[i + 1]);
+}
 
 int main(int argc, char **argv) {
     setparameters(argc, argv);

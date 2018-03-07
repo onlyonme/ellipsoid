@@ -21,6 +21,7 @@ long Threads = 8;
 long dimensionR = 100;
 long dimension = 100;
 long binaryFlag = 0;
+int hit=10;
 
 float *entityVec, *relationVec;
 long testTotal, tripleTotal, trainTotal, validTotal;
@@ -56,7 +57,7 @@ void init() {
     tmp = fscanf(fin, "%ld", &relationTotal);
     fclose(fin);
     relationVec = (float *)calloc(relationTotal * dimensionR, sizeof(float));
-    
+
     fin = fopen((inPath + "entity2id.txt").c_str(), "r");
     tmp = fscanf(fin, "%ld", &entityTotal);
     fclose(fin);
@@ -105,7 +106,7 @@ void init() {
         tripleList[i + testTotal + trainTotal].t = t;
         tripleList[i + testTotal + trainTotal].r = r;
     }
-    
+
     fclose(f_kb1);
     fclose(f_kb2);
     fclose(f_kb3);
@@ -140,17 +141,17 @@ void init() {
 
 void prepre_binary() {
     struct stat statbuf1;
-    if (stat((initPath + "entity2vec" + note + ".bin").c_str(), &statbuf1) != -1) {  
+    if (stat((initPath + "entity2vec" + note + ".bin").c_str(), &statbuf1) != -1) {
         int fd = open((initPath + "entity2vec" + note + ".bin").c_str(), O_RDONLY);
-        float* entityVecTmp = (float*)mmap(NULL, statbuf1.st_size, PROT_READ, MAP_PRIVATE, fd, 0); 
+        float* entityVecTmp = (float*)mmap(NULL, statbuf1.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
         memcpy(entityVec, entityVecTmp, statbuf1.st_size);
         munmap(entityVecTmp, statbuf1.st_size);
         close(fd);
-    }  
+    }
     struct stat statbuf2;
-    if (stat((initPath + "relation2vec" + note + ".bin").c_str(), &statbuf2) != -1) {  
+    if (stat((initPath + "relation2vec" + note + ".bin").c_str(), &statbuf2) != -1) {
         int fd = open((initPath + "relation2vec" + note + ".bin").c_str(), O_RDONLY);
-        float* relationVecTmp =(float*)mmap(NULL, statbuf2.st_size, PROT_READ, MAP_PRIVATE, fd, 0); 
+        float* relationVecTmp =(float*)mmap(NULL, statbuf2.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
         memcpy(relationVec, relationVecTmp, statbuf2.st_size);
         munmap(relationVecTmp, statbuf2.st_size);
         close(fd);
@@ -261,20 +262,20 @@ void* testMode(void *con) {
                 }
             }
         }
-        if (l_filter_s < 10) l_filter_tot[0][id] += 1;
-        if (l_s < 10) l_tot[0][id] += 1;
-        if (r_filter_s < 10) r_filter_tot[0][id] += 1;
-        if (r_s < 10) r_tot[0][id] += 1;
+        if (l_filter_s < hit) l_filter_tot[0][id] += 1;
+        if (l_s < hit) l_tot[0][id] += 1;
+        if (r_filter_s < hit) r_filter_tot[0][id] += 1;
+        if (r_s < hit) r_tot[0][id] += 1;
 
         l_filter_rank[0][id] += l_filter_s;
         r_filter_rank[0][id] += r_filter_s;
         l_rank[0][id] += l_s;
         r_rank[0][id] += r_s;
 
-        if (l_filter_s < 10) l_filter_tot[label][id] += 1;
-        if (l_s < 10) l_tot[label][id] += 1;
-        if (r_filter_s < 10) r_filter_tot[label][id] += 1;
-        if (r_s < 10) r_tot[label][id] += 1;
+        if (l_filter_s < hit) l_filter_tot[label][id] += 1;
+        if (l_s < hit) l_tot[label][id] += 1;
+        if (r_filter_s < hit) r_filter_tot[label][id] += 1;
+        if (r_s < hit) r_tot[label][id] += 1;
 
         l_filter_rank[label][id] += l_filter_s;
         r_filter_rank[label][id] += r_filter_s;
@@ -283,10 +284,10 @@ void* testMode(void *con) {
 
 
 
-        if (l_filter_s_constrain < 10) l_filter_tot[5][id] += 1;
-        if (l_s_constrain < 10) l_tot[5][id] += 1;
-        if (r_filter_s_constrain < 10) r_filter_tot[5][id] += 1;
-        if (r_s_constrain < 10) r_tot[5][id] += 1;
+        if (l_filter_s_constrain < hit) l_filter_tot[5][id] += 1;
+        if (l_s_constrain < hit) l_tot[5][id] += 1;
+        if (r_filter_s_constrain < hit) r_filter_tot[5][id] += 1;
+        if (r_s_constrain < hit) r_tot[5][id] += 1;
 
         l_filter_rank[5][id] += l_filter_s_constrain;
         r_filter_rank[5][id] += r_filter_s_constrain;
@@ -370,8 +371,9 @@ void setparameters(long argc, char **argv) {
     if ((i = ArgPos((char *)"-thread", argc, argv)) > 0) Threads = atoi(argv[i + 1]);
     if ((i = ArgPos((char *)"-binary", argc, argv)) > 0) binaryFlag = atoi(argv[i + 1]);
     if ((i = ArgPos((char *)"-note", argc, argv)) > 0) note = argv[i + 1];
+    if ((i = ArgPos((char *)"-hit", argc, argv)) > 0) hit = atoi(argv[i + 1]);
 
-} 
+}
 
 int main(int argc, char **argv) {
     setparameters(argc, argv);

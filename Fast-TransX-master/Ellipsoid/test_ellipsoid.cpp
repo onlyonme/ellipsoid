@@ -23,6 +23,7 @@ long dimensionR = 100;
 long dimension = 100;
 float *entityVec, *relationVec, *matrix_h,*matrix_t,*centr_h,*centr_t;
 long testTotal, tripleTotal, trainTotal, validTotal;
+int hit=10;
 
 struct Triple {
     long h, r, t;
@@ -56,7 +57,7 @@ void init() {
     tmp = fscanf(fin, "%ld", &relationTotal);
     fclose(fin);
     relationVec = (float *)calloc(relationTotal * dimensionR, sizeof(float));
-    
+
     matrix_h = (float*)calloc(relationTotal*dimension*(dimension+1),sizeof(float));
     matrix_t = matrix_h + relationTotal *dimension *(dimension+1)/2;
     centr_h = (float *)calloc(2*relationTotal * dimension, sizeof(float));
@@ -109,7 +110,7 @@ void init() {
         tripleList[i + testTotal + trainTotal].t = t;
         tripleList[i + testTotal + trainTotal].r = r;
     }
-    
+
     fclose(f_kb1);
     fclose(f_kb2);
     fclose(f_kb3);
@@ -192,7 +193,7 @@ REAL cal_k_h(INT e,INT rel, REAL *M){
 		for(INT j=i;j<dimension;j++){
 			k+=2*M[i * dimension + j -  i*(i+1)/2]*(entityVec[lasta+i]-centr_h[lastc+i])*(entityVec[lasta+j]-centr_h[lastc+j]);
 		}
-		
+
 	return k;
 }
 REAL cal_k_t(INT e,INT rel, REAL *M){
@@ -313,20 +314,20 @@ void* testMode(void *con) {
                 }
             }
         }
-        if (l_filter_s < 10) l_filter_tot[0][id] += 1;
-        if (l_s < 10) l_tot[0][id] += 1;
-        if (r_filter_s < 10) r_filter_tot[0][id] += 1;
-        if (r_s < 10) r_tot[0][id] += 1;
+        if (l_filter_s < hit) l_filter_tot[0][id] += 1;
+        if (l_s < hit) l_tot[0][id] += 1;
+        if (r_filter_s < hit) r_filter_tot[0][id] += 1;
+        if (r_s < hit) r_tot[0][id] += 1;
 
         l_filter_rank[0][id] += l_filter_s;
         r_filter_rank[0][id] += r_filter_s;
         l_rank[0][id] += l_s;
         r_rank[0][id] += r_s;
 
-        if (l_filter_s < 10) l_filter_tot[label][id] += 1;
-        if (l_s < 10) l_tot[label][id] += 1;
-        if (r_filter_s < 10) r_filter_tot[label][id] += 1;
-        if (r_s < 10) r_tot[label][id] += 1;
+        if (l_filter_s < hit) l_filter_tot[label][id] += 1;
+        if (l_s < hit) l_tot[label][id] += 1;
+        if (r_filter_s < hit) r_filter_tot[label][id] += 1;
+        if (r_s < hit) r_tot[label][id] += 1;
 
         l_filter_rank[label][id] += l_filter_s;
         r_filter_rank[label][id] += r_filter_s;
@@ -419,8 +420,9 @@ void setparameters(long argc, char **argv) {
     if ((i = ArgPos((char *)"-thread", argc, argv)) > 0) Threads = atoi(argv[i + 1]);
     if ((i = ArgPos((char *)"-load", argc, argv)) > 0) loadPath = argv[i + 1];
     if ((i = ArgPos((char *)"-note", argc, argv)) > 0) note = argv[i + 1];
+    if ((i = ArgPos((char *)"-hit", argc, argv)) > 0) hit = atoi(argv[i + 1]);
 
-} 
+}
 
 int main(int argc, char **argv) {
     setparameters(argc, argv);

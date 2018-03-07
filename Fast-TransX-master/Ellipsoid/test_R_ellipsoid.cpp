@@ -20,6 +20,9 @@ long dimension = 50;
 
 float *entityVec, *relationVec, *entityRelVec, *matrix,*matrix_h,*matrix_t,*centr_h,*centr_t;
 long testTotal, tripleTotal, trainTotal, validTotal;
+int hit=10;
+
+
 
 struct Triple {
     long h, r, t, label;
@@ -52,17 +55,17 @@ void init() {
     tmp = fscanf(fin, "%ld", &relationTotal);
     fclose(fin);
     relationVec = (float *)calloc(relationTotal * dimensionR, sizeof(float));
-    
+
     fin = fopen((inPath + "entity2id.txt").c_str(), "r");
     tmp = fscanf(fin, "%ld", &entityTotal);
     fclose(fin);
     entityVec = (float *)calloc(entityTotal * dimension, sizeof(float));
     matrix = (float *)calloc(relationTotal * dimension * dimensionR, sizeof(float));
 
-	matrix_h= (float *)calloc(relationTotal * dimension*(dimension+1)/2, sizeof(float));
-	matrix_t= (float *)calloc(relationTotal * dimension*(dimension+1)/2, sizeof(float));
+	matrix_h= (float *)calloc(relationTotal * dimension*(dimension+1), sizeof(float));
+	matrix_t= matrix_h+dimension*(dimension+1)/2;
 	centr_h= (float *)calloc(relationTotal*2 * dimension, sizeof(float));
-	centr_t= (float *)calloc(relationTotal*2 * dimension, sizeof(float));
+	centr_t= centr_h+relationTotal * dimension;
 
     FILE* f_kb1 = fopen((inPath + "test2id_all.txt").c_str(),"r");
     FILE* f_kb2 = fopen((inPath + "train2id.txt").c_str(),"r");
@@ -106,7 +109,7 @@ void init() {
         tripleList[i + testTotal + trainTotal].t = t;
         tripleList[i + testTotal + trainTotal].r = r;
     }
-    
+
     fclose(f_kb1);
     fclose(f_kb2);
     fclose(f_kb3);
@@ -181,9 +184,9 @@ void prepare() {
                 for (long ii = 0; ii < dimensionR; ii++)
                     tmp = fscanf(fin, "%f", &matrix[i * dimensionR * dimension + jj + ii * dimension]);
     fclose(fin);
-    
+
      fin = fopen((initPath + "M" + note + ".vec").c_str(), "r");
-        
+
     for (long i = 0; i < relationTotal*2; i++) {
         long last = i * dimension*(dimension+1)/2;
         for (long j = 0; j < dimension*(dimension+1)/2; j++)
@@ -231,7 +234,7 @@ REAL cal_k_h(INT e,INT rel, REAL *M){
 			//cout<<"d of k_h:  "<<2*M[i * dimension + j -  i*(i+1)/2]*(entityVec[lasta+i]-centr_h[lastc+i])*(entityVec[lasta+j]-centr_h[lastc+j])<<endl;
 			//cout<<"k_h:  "<<k<<endl;
 		}
-		
+
 	return k;
 }
 REAL cal_k_t(INT e,INT rel, REAL *M){
@@ -361,20 +364,20 @@ void* testMode(void *con) {
                 }
             }
         }
-        if (l_filter_s < 10) l_filter_tot[0][id] += 1;
-        if (l_s < 10) l_tot[0][id] += 1;
-        if (r_filter_s < 10) r_filter_tot[0][id] += 1;
-        if (r_s < 10) r_tot[0][id] += 1;
+        if (l_filter_s < hit) l_filter_tot[0][id] += 1;
+        if (l_s < hit) l_tot[0][id] += 1;
+        if (r_filter_s < hit) r_filter_tot[0][id] += 1;
+        if (r_s < hit) r_tot[0][id] += 1;
 
         l_filter_rank[0][id] += l_filter_s;
         r_filter_rank[0][id] += r_filter_s;
         l_rank[0][id] += l_s;
         r_rank[0][id] += r_s;
 
-        if (l_filter_s < 10) l_filter_tot[label][id] += 1;
-        if (l_s < 10) l_tot[label][id] += 1;
-        if (r_filter_s < 10) r_filter_tot[label][id] += 1;
-        if (r_s < 10) r_tot[label][id] += 1;
+        if (l_filter_s < hit) l_filter_tot[label][id] += 1;
+        if (l_s < hit) l_tot[label][id] += 1;
+        if (r_filter_s < hit) r_filter_tot[label][id] += 1;
+        if (r_s < hit) r_tot[label][id] += 1;
 
         l_filter_rank[label][id] += l_filter_s;
         r_filter_rank[label][id] += r_filter_s;
@@ -383,10 +386,10 @@ void* testMode(void *con) {
 
 
 
-        if (l_filter_s_constrain < 10) l_filter_tot[5][id] += 1;
-        if (l_s_constrain < 10) l_tot[5][id] += 1;
-        if (r_filter_s_constrain < 10) r_filter_tot[5][id] += 1;
-        if (r_s_constrain < 10) r_tot[5][id] += 1;
+        if (l_filter_s_constrain < hit) l_filter_tot[5][id] += 1;
+        if (l_s_constrain < hit) l_tot[5][id] += 1;
+        if (r_filter_s_constrain < hit) r_filter_tot[5][id] += 1;
+        if (r_s_constrain < hit) r_tot[5][id] += 1;
 
         l_filter_rank[5][id] += l_filter_s_constrain;
         r_filter_rank[5][id] += r_filter_s_constrain;
@@ -463,13 +466,14 @@ long ArgPos(char *str, long argc, char **argv) {
 void setparameters(int argc, char **argv) {
     int i;
     if ((i = ArgPos((char *)"-size", argc, argv)) > 0) dimension = atoi(argv[i + 1]);
+    if ((i = ArgPos((char *)"-hit", argc, argv)) > 0) hit = atoi(argv[i + 1]);
     if ((i = ArgPos((char *)"-sizeR", argc, argv)) > 0) dimensionR = atoi(argv[i + 1]);
     if ((i = ArgPos((char *)"-input", argc, argv)) > 0) inPath = argv[i + 1];
     if ((i = ArgPos((char *)"-init", argc, argv)) > 0) initPath = argv[i + 1];
     if ((i = ArgPos((char *)"-thread", argc, argv)) > 0) Threads = atoi(argv[i + 1]);
     if ((i = ArgPos((char *)"-load", argc, argv)) > 0) loadPath = argv[i + 1];
     if ((i = ArgPos((char *)"-note", argc, argv)) > 0) note = argv[i + 1];
-} 
+}
 
 int main(int argc, char **argv) {
     setparameters(argc, argv);
